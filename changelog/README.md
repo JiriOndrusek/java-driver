@@ -4,6 +4,7 @@
 
 ### 4.9.0 (in progress)
 
+- [new feature] JAVA-2721: Add counter support in the mapper
 
 ### 4.8.0
 

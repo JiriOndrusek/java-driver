@@ -19,10 +19,12 @@ import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 import com.datastax.oss.driver.api.mapper.annotations.Computed;
 import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
+import com.datastax.oss.driver.api.mapper.annotations.IntrospectionStrategy;
 import com.datastax.oss.driver.api.mapper.annotations.NamingStrategy;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 import com.datastax.oss.driver.api.mapper.annotations.Transient;
 import com.datastax.oss.driver.api.mapper.annotations.TransientProperties;
+import com.datastax.oss.driver.api.mapper.entity.naming.GetterStyle;
 import com.datastax.oss.driver.api.mapper.entity.naming.NamingConvention;
 import com.datastax.oss.driver.internal.mapper.processor.ProcessorContext;
 import com.datastax.oss.driver.internal.mapper.processor.util.AnnotationScanner;
@@ -83,6 +85,9 @@ public class DefaultEntityFactory implements EntityFactory {
       typeHierarchy.add((TypeElement) context.getTypeUtils().asElement(type));
     }
 
+    Optional<IntrospectionStrategy> introspectionStrategy = getIntrospectionStrategy(typeHierarchy);
+    GetterStyle getterStyle =
+        introspectionStrategy.map(IntrospectionStrategy::getterStyle).orElse(GetterStyle.JAVABEANS);
     CqlNameGenerator cqlNameGenerator = buildCqlNameGenerator(typeHierarchy);
     Set<String> transientProperties = getTransientPropertyNames(typeHierarchy);
 
@@ -111,24 +116,35 @@ public class DefaultEntityFactory implements EntityFactory {
         }
 
         String getMethodName = getMethod.getSimpleName().toString();
-        boolean regularGetterName = getMethodName.startsWith("get");
-        boolean booleanGetterName =
-            getMethodName.startsWith("is")
-                && (typeMirror.getKind() == TypeKind.BOOLEAN
-                    || context.getClassUtils().isSame(typeMirror, Boolean.class));
-        if (!regularGetterName && !booleanGetterName) {
-          continue;
-        }
-
         String propertyName;
         String setMethodName;
-        if (regularGetterName) {
-          propertyName = Capitalizer.decapitalize(getMethodName.substring(3));
-          setMethodName = getMethodName.replaceFirst("get", "set");
-        } else {
-          propertyName = Capitalizer.decapitalize(getMethodName.substring(2));
-          setMethodName = getMethodName.replaceFirst("is", "set");
+        switch (getterStyle) {
+          case SHORT:
+            propertyName = getMethodName;
+            setMethodName = "set" + Capitalizer.capitalize(getMethodName);
+            break;
+          case JAVABEANS:
+            boolean regularGetterName = getMethodName.startsWith("get");
+            boolean booleanGetterName =
+                getMethodName.startsWith("is")
+                    && (typeMirror.getKind() == TypeKind.BOOLEAN
+                        || context.getClassUtils().isSame(typeMirror, Boolean.class));
+            if (!regularGetterName && !booleanGetterName) {
+              continue;
+            }
+
+            if (regularGetterName) {
+              propertyName = Capitalizer.decapitalize(getMethodName.substring(3));
+              setMethodName = getMethodName.replaceFirst("get", "set");
+            } else {
+              propertyName = Capitalizer.decapitalize(getMethodName.substring(2));
+              setMethodName = getMethodName.replaceFirst("is", "set");
+            }
+            break;
+          default:
+            throw new AssertionError("Unsupported getter style " + getterStyle);
         }
+
         // skip properties we've already encountered.
         if (encounteredPropertyNames.contains(propertyName)) {
           continue;
@@ -450,6 +466,11 @@ public class DefaultEntityFactory implements EntityFactory {
     return annotation.isPresent()
         ? Sets.newHashSet(annotation.get().getAnnotation().value())
         : Collections.emptySet();
+  }
+
+  private Optional<IntrospectionStrategy> getIntrospectionStrategy(Set<TypeElement> typeHierarchy) {
+    return AnnotationScanner.getClassAnnotation(IntrospectionStrategy.class, typeHierarchy)
+        .map(ResolvedAnnotation::getAnnotation);
   }
 
   private void reportMultipleAnnotationError(

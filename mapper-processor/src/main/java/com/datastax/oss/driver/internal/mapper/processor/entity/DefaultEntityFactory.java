@@ -88,6 +88,7 @@ public class DefaultEntityFactory implements EntityFactory {
     Optional<IntrospectionStrategy> introspectionStrategy = getIntrospectionStrategy(typeHierarchy);
     GetterStyle getterStyle =
         introspectionStrategy.map(IntrospectionStrategy::getterStyle).orElse(GetterStyle.JAVABEANS);
+    boolean mutable = introspectionStrategy.map(IntrospectionStrategy::mutable).orElse(true);
     CqlNameGenerator cqlNameGenerator = buildCqlNameGenerator(typeHierarchy);
     Set<String> transientProperties = getTransientPropertyNames(typeHierarchy);
 
@@ -116,6 +117,14 @@ public class DefaultEntityFactory implements EntityFactory {
         }
 
         String getMethodName = getMethod.getSimpleName().toString();
+        // For this given combination, toString() and hashCode() are false positives, always skip
+        // them:
+        if (getterStyle == GetterStyle.SHORT
+            && !mutable
+            && (getMethodName.equals("toString") || getMethodName.equals("hashCode"))) {
+          continue;
+        }
+
         String propertyName;
         String setMethodName;
         switch (getterStyle) {
@@ -151,7 +160,7 @@ public class DefaultEntityFactory implements EntityFactory {
         }
 
         ExecutableElement setMethod = findSetMethod(typeHierarchy, setMethodName, typeMirror);
-        if (setMethod == null) {
+        if (setMethod == null && mutable) {
           continue; // must have both
         }
         VariableElement field = findField(typeHierarchy, propertyName, typeMirror);
@@ -248,7 +257,8 @@ public class DefaultEntityFactory implements EntityFactory {
         ImmutableList.copyOf(clusteringColumns.values()),
         regularColumns.build(),
         computedValues.build(),
-        cqlNameGenerator);
+        cqlNameGenerator,
+        mutable);
   }
 
   @Nullable

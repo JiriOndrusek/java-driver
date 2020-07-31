@@ -41,4 +41,17 @@ public @interface IntrospectionStrategy {
 
   /** The style of getter. See {@link GetterStyle} and its constants for more explanations. */
   GetterStyle getterStyle() default GetterStyle.JAVABEANS;
+
+  /**
+   * Whether the entity is mutable.
+   *
+   * <p>If this is set to false:
+   *
+   * <ul>
+   *   <li>the mapper won't try to discover setters for the properties;
+   *   <li>it will assume that the entity class has a visible constructor that takes all the
+   *       non-transient properties as arguments.
+   * </ul>
+   */
+  boolean mutable() default true;
 }

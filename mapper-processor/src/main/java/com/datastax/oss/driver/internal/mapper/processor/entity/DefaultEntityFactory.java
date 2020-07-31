@@ -53,6 +53,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -85,10 +86,15 @@ public class DefaultEntityFactory implements EntityFactory {
       typeHierarchy.add((TypeElement) context.getTypeUtils().asElement(type));
     }
 
+    boolean isScalaCaseClass = isScalaCaseClass(typeHierarchy);
+
     Optional<IntrospectionStrategy> introspectionStrategy = getIntrospectionStrategy(typeHierarchy);
     GetterStyle getterStyle =
-        introspectionStrategy.map(IntrospectionStrategy::getterStyle).orElse(GetterStyle.JAVABEANS);
-    boolean mutable = introspectionStrategy.map(IntrospectionStrategy::mutable).orElse(true);
+        introspectionStrategy
+            .map(IntrospectionStrategy::getterStyle)
+            .orElse(isScalaCaseClass ? GetterStyle.SHORT : GetterStyle.JAVABEANS);
+    boolean mutable =
+        introspectionStrategy.map(IntrospectionStrategy::mutable).orElse(!isScalaCaseClass);
     CqlNameGenerator cqlNameGenerator = buildCqlNameGenerator(typeHierarchy);
     Set<String> transientProperties = getTransientPropertyNames(typeHierarchy);
 
@@ -117,11 +123,18 @@ public class DefaultEntityFactory implements EntityFactory {
         }
 
         String getMethodName = getMethod.getSimpleName().toString();
-        // For this given combination, toString() and hashCode() are false positives, always skip
-        // them:
+
+        // Skip a few false positives when we don't require a "get" prefix:
         if (getterStyle == GetterStyle.SHORT
             && !mutable
             && (getMethodName.equals("toString") || getMethodName.equals("hashCode"))) {
+          continue;
+        }
+        if (isScalaCaseClass
+            && (getMethodName.equals("productPrefix")
+                || getMethodName.equals("productArity")
+                || getMethodName.equals("productIterator")
+                || getMethodName.startsWith("copy$default$"))) {
           continue;
         }
 
@@ -259,6 +272,16 @@ public class DefaultEntityFactory implements EntityFactory {
         computedValues.build(),
         cqlNameGenerator,
         mutable);
+  }
+
+  private boolean isScalaCaseClass(Set<TypeElement> typeHierarchy) {
+    for (TypeElement element : typeHierarchy) {
+      Name name = element.getQualifiedName();
+      if (name != null && name.toString().equals("scala.Product")) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Nullable

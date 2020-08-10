@@ -53,8 +53,8 @@ public interface PropertyDefinition {
 
   /**
    * @return The name of the "set" method associated with this property used to update the value of
-   *     the property on the entity, or {@code null} if the entity was marked as {@link
-   *     IntrospectionStrategy#immutable()}.
+   *     the property on the entity, or {@code null} if the entity was marked as not {@link
+   *     IntrospectionStrategy#mutable()}.
    */
   String getSetterName();
 

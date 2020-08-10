@@ -124,17 +124,15 @@ public class DefaultEntityFactory implements EntityFactory {
 
         String getMethodName = getMethod.getSimpleName().toString();
 
-        // Skip a few false positives when we don't require a "get" prefix:
-        if (getterStyle == GetterStyle.SHORT
-            && !mutable
-            && (getMethodName.equals("toString") || getMethodName.equals("hashCode"))) {
-          continue;
-        }
-        if (isScalaCaseClass
-            && (getMethodName.equals("productPrefix")
-                || getMethodName.equals("productArity")
-                || getMethodName.equals("productIterator")
-                || getMethodName.startsWith("copy$default$"))) {
+        // toString(), hashCode() and a few Scala methods test as false positives with the short
+        // getter style:
+        if (getMethodName.equals("toString")
+            || getMethodName.equals("hashCode")
+            || (isScalaCaseClass
+                && (getMethodName.equals("productPrefix")
+                    || getMethodName.equals("productArity")
+                    || getMethodName.equals("productIterator")
+                    || getMethodName.startsWith("copy$default$")))) {
           continue;
         }
 
@@ -146,9 +144,11 @@ public class DefaultEntityFactory implements EntityFactory {
             setMethodName = "set" + Capitalizer.capitalize(getMethodName);
             break;
           case JAVABEANS:
-            boolean regularGetterName = getMethodName.startsWith("get");
+            boolean regularGetterName =
+                getMethodName.startsWith("get") && getMethodName.length() > 3;
             boolean booleanGetterName =
                 getMethodName.startsWith("is")
+                    && getMethodName.length() > 2
                     && (typeMirror.getKind() == TypeKind.BOOLEAN
                         || context.getClassUtils().isSame(typeMirror, Boolean.class));
             if (!regularGetterName && !booleanGetterName) {

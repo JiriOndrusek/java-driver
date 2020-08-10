@@ -30,10 +30,15 @@ import java.lang.annotation.Target;
  * <pre>
  * &#64;Entity
  * &#64;IntrospectionStrategy(getterStyle = SHORT)
- * public class Product {
+ * public class Account {
  *   ...
  * }
  * </pre>
+ *
+ * Note that when the mapper processes a Scala case class (detected by checking if the entity
+ * implements {@code scala.Product}), it will automatically switch to {@code getterStyle = SHORT}
+ * and {@code mutable = false}. You can override those defaults by adding an explicit annotation on
+ * your case class.
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)

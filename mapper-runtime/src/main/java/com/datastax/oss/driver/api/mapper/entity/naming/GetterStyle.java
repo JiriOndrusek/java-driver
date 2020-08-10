@@ -29,8 +29,9 @@ import com.datastax.oss.driver.api.mapper.annotations.IntrospectionStrategy;
 public enum GetterStyle {
 
   /**
-   * "JavaBeans" style: the method name must start with "get". The name of the property is the
-   * getter name without a prefix, and decapitalized, for example {@code int getFoo() => foo}.
+   * "JavaBeans" style: the method name must start with "get", or "is" for boolean properties. The
+   * name of the property is the getter name without a prefix, and decapitalized, for example {@code
+   * int getFoo() => foo}.
    */
   JAVABEANS,
 
@@ -38,7 +39,9 @@ public enum GetterStyle {
    * "Short" style: any name will match (as long as the no-arg, not-void rule also holds), and is
    * considered to be the property name without any prefix. For example {@code int foo() => foo}.
    *
-   * <p>Note that this is how compiled Scala case classes appear to the annotation processor.
+   * <p>Note that this is the convention used in compiled Scala case classes. Whenever the mapper
+   * processes a type that implements {@code scala.Product}, it will switch to this style by
+   * default.
    */
   SHORT,
   ;

@@ -47,6 +47,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -261,17 +262,20 @@ public class DefaultEntityFactory implements EntityFactory {
     String entityName = Capitalizer.decapitalize(processedClass.getSimpleName().toString());
     String defaultKeyspace = processedClass.getAnnotation(Entity.class).defaultKeyspace();
 
-    return new DefaultEntityDefinition(
-        ClassName.get(processedClass),
-        entityName,
-        defaultKeyspace.isEmpty() ? null : defaultKeyspace,
-        Optional.ofNullable(processedClass.getAnnotation(CqlName.class)).map(CqlName::value),
-        ImmutableList.copyOf(partitionKey.values()),
-        ImmutableList.copyOf(clusteringColumns.values()),
-        regularColumns.build(),
-        computedValues.build(),
-        cqlNameGenerator,
-        mutable);
+    EntityDefinition entityDefinition =
+        new DefaultEntityDefinition(
+            ClassName.get(processedClass),
+            entityName,
+            defaultKeyspace.isEmpty() ? null : defaultKeyspace,
+            Optional.ofNullable(processedClass.getAnnotation(CqlName.class)).map(CqlName::value),
+            ImmutableList.copyOf(partitionKey.values()),
+            ImmutableList.copyOf(clusteringColumns.values()),
+            regularColumns.build(),
+            computedValues.build(),
+            cqlNameGenerator,
+            mutable);
+    validateConstructor(entityDefinition, processedClass);
+    return entityDefinition;
   }
 
   private boolean isScalaCaseClass(Set<TypeElement> typeHierarchy) {
@@ -607,6 +611,78 @@ public class DefaultEntityFactory implements EntityFactory {
           annotations.put(annotationClass, annotation.get().getAnnotation());
         }
       }
+    }
+  }
+
+  private void validateConstructor(EntityDefinition entity, TypeElement processedClass) {
+    if (entity.isMutable()) {
+      validateNoArgConstructor(processedClass);
+    } else {
+      validateAllColumnsConstructor(processedClass, entity.getAllColumns());
+    }
+  }
+
+  private void validateNoArgConstructor(TypeElement processedClass) {
+    for (Element child : processedClass.getEnclosedElements()) {
+      if (child.getKind() == ElementKind.CONSTRUCTOR) {
+        ExecutableElement constructor = (ExecutableElement) child;
+        Set<Modifier> modifiers = constructor.getModifiers();
+        if (!modifiers.contains(Modifier.PRIVATE) && constructor.getParameters().isEmpty()) {
+          return;
+        }
+      }
+    }
+    context
+        .getMessager()
+        .error(
+            processedClass,
+            "Mutable @%s-annotated class must have a no-arg constructor.",
+            Entity.class.getSimpleName());
+  }
+
+  private void validateAllColumnsConstructor(
+      TypeElement processedClass, List<PropertyDefinition> columns) {
+    for (Element child : processedClass.getEnclosedElements()) {
+      if (child.getKind() == ElementKind.CONSTRUCTOR) {
+        ExecutableElement constructor = (ExecutableElement) child;
+        Set<Modifier> modifiers = constructor.getModifiers();
+        if (!modifiers.contains(Modifier.PRIVATE)
+            && areAssignable(columns, constructor.getParameters())) {
+          return;
+        }
+      }
+    }
+    String signature =
+        columns.stream()
+            .map(
+                column ->
+                    String.format("%s %s", column.getType().asTypeMirror(), column.getGetterName()))
+            .collect(Collectors.joining(", "));
+    context
+        .getMessager()
+        .error(
+            processedClass,
+            "Immutable @%s-annotated class must have an \"all columns\" constructor. "
+                + "Expected signature: (%s).",
+            Entity.class.getSimpleName(),
+            signature);
+  }
+
+  private boolean areAssignable(
+      List<PropertyDefinition> columns, List<? extends VariableElement> parameters) {
+    if (columns.size() != parameters.size()) {
+      return false;
+    } else {
+      for (int i = 0; i < columns.size(); i++) {
+        // What the generated code will pass to the constructor:
+        TypeMirror argumentType = columns.get(i).getType().asTypeMirror();
+        // What the constructor declares:
+        TypeMirror parameterType = parameters.get(i).asType();
+        if (!context.getTypeUtils().isAssignable(argumentType, parameterType)) {
+          return false;
+        }
+      }
+      return true;
     }
   }
 }

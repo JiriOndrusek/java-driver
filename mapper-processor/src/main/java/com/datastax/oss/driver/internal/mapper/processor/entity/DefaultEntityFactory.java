@@ -133,6 +133,7 @@ public class DefaultEntityFactory implements EntityFactory {
                 && (getMethodName.equals("productPrefix")
                     || getMethodName.equals("productArity")
                     || getMethodName.equals("productIterator")
+                    || getMethodName.equals("productElementNames")
                     || getMethodName.startsWith("copy$default$")))) {
           continue;
         }

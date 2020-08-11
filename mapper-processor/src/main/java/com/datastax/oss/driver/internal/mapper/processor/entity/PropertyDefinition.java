@@ -18,7 +18,7 @@ package com.datastax.oss.driver.internal.mapper.processor.entity;
 import com.datastax.oss.driver.api.core.data.GettableByName;
 import com.datastax.oss.driver.api.core.data.SettableByName;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
-import com.datastax.oss.driver.api.mapper.annotations.IntrospectionStrategy;
+import com.datastax.oss.driver.api.mapper.annotations.PropertyStrategy;
 import com.datastax.oss.driver.internal.mapper.processor.util.generation.PropertyType;
 import com.squareup.javapoet.CodeBlock;
 
@@ -54,7 +54,7 @@ public interface PropertyDefinition {
   /**
    * @return The name of the "set" method associated with this property used to update the value of
    *     the property on the entity, or {@code null} if the entity was marked as not {@link
-   *     IntrospectionStrategy#mutable()}.
+   *     PropertyStrategy#mutable()}.
    */
   String getSetterName();
 

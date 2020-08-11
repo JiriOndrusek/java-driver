@@ -19,9 +19,9 @@ import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 import com.datastax.oss.driver.api.mapper.annotations.Computed;
 import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
-import com.datastax.oss.driver.api.mapper.annotations.IntrospectionStrategy;
 import com.datastax.oss.driver.api.mapper.annotations.NamingStrategy;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
+import com.datastax.oss.driver.api.mapper.annotations.PropertyStrategy;
 import com.datastax.oss.driver.api.mapper.annotations.Transient;
 import com.datastax.oss.driver.api.mapper.annotations.TransientProperties;
 import com.datastax.oss.driver.api.mapper.entity.naming.GetterStyle;
@@ -89,13 +89,13 @@ public class DefaultEntityFactory implements EntityFactory {
 
     boolean isScalaCaseClass = isScalaCaseClass(typeHierarchy);
 
-    Optional<IntrospectionStrategy> introspectionStrategy = getIntrospectionStrategy(typeHierarchy);
+    Optional<PropertyStrategy> introspectionStrategy = getIntrospectionStrategy(typeHierarchy);
     GetterStyle getterStyle =
         introspectionStrategy
-            .map(IntrospectionStrategy::getterStyle)
+            .map(PropertyStrategy::getterStyle)
             .orElse(isScalaCaseClass ? GetterStyle.SHORT : GetterStyle.JAVABEANS);
     boolean mutable =
-        introspectionStrategy.map(IntrospectionStrategy::mutable).orElse(!isScalaCaseClass);
+        introspectionStrategy.map(PropertyStrategy::mutable).orElse(!isScalaCaseClass);
     CqlNameGenerator cqlNameGenerator = buildCqlNameGenerator(typeHierarchy);
     Set<String> transientProperties = getTransientPropertyNames(typeHierarchy);
 
@@ -505,8 +505,8 @@ public class DefaultEntityFactory implements EntityFactory {
         : Collections.emptySet();
   }
 
-  private Optional<IntrospectionStrategy> getIntrospectionStrategy(Set<TypeElement> typeHierarchy) {
-    return AnnotationScanner.getClassAnnotation(IntrospectionStrategy.class, typeHierarchy)
+  private Optional<PropertyStrategy> getIntrospectionStrategy(Set<TypeElement> typeHierarchy) {
+    return AnnotationScanner.getClassAnnotation(PropertyStrategy.class, typeHierarchy)
         .map(ResolvedAnnotation::getAnnotation);
   }
 

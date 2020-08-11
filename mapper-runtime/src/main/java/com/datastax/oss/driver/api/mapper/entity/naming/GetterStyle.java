@@ -15,7 +15,7 @@
  */
 package com.datastax.oss.driver.api.mapper.entity.naming;
 
-import com.datastax.oss.driver.api.mapper.annotations.IntrospectionStrategy;
+import com.datastax.oss.driver.api.mapper.annotations.PropertyStrategy;
 
 /**
  * The style of getter that the mapper will look for when introspecting an entity class.
@@ -24,7 +24,7 @@ import com.datastax.oss.driver.api.mapper.annotations.IntrospectionStrategy;
  * that follow the configured style. Then the mapper will try to find a matching field (which is not
  * required), and, if the entity is mutable, a setter.
  *
- * @see IntrospectionStrategy
+ * @see PropertyStrategy
  */
 public enum GetterStyle {
 

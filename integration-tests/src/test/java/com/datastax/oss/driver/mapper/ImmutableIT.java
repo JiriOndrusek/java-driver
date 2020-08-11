@@ -28,9 +28,9 @@ import com.datastax.oss.driver.api.mapper.annotations.DaoFactory;
 import com.datastax.oss.driver.api.mapper.annotations.DaoKeyspace;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.Insert;
-import com.datastax.oss.driver.api.mapper.annotations.IntrospectionStrategy;
 import com.datastax.oss.driver.api.mapper.annotations.Mapper;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
+import com.datastax.oss.driver.api.mapper.annotations.PropertyStrategy;
 import com.datastax.oss.driver.api.mapper.annotations.Select;
 import com.datastax.oss.driver.api.testinfra.ccm.CcmRule;
 import com.datastax.oss.driver.api.testinfra.session.SessionRule;
@@ -80,7 +80,7 @@ public class ImmutableIT extends InventoryITBase {
 
   @Entity
   @CqlName("product")
-  @IntrospectionStrategy(getterStyle = SHORT, mutable = false)
+  @PropertyStrategy(getterStyle = SHORT, mutable = false)
   public static class ImmutableProduct {
     @PartitionKey private final UUID id;
     private final String description;

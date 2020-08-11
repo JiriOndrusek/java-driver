@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
  *
  * <pre>
  * &#64;Entity
- * &#64;IntrospectionStrategy(getterStyle = SHORT)
+ * &#64;PropertyStrategy(getterStyle = SHORT)
  * public class Account {
  *   ...
  * }
@@ -42,7 +42,7 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface IntrospectionStrategy {
+public @interface PropertyStrategy {
 
   /** The style of getter. See {@link GetterStyle} and its constants for more explanations. */
   GetterStyle getterStyle() default GetterStyle.JAVABEANS;

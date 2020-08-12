@@ -50,7 +50,7 @@ import java.util.function.UnaryOperator;
  * value of 10, the counter will be incremented by 10, not set to 10.
  *
  * <p>A {@link Function Function&lt;BoundStatementBuilder, BoundStatementBuilder&gt;} or {@link
- * UnaryOperator UnaryOperator&lt;BoundStatementBuilder&gt;} can be added as the <b>last</b>
+ * UnaryOperator UnaryOperator&lt;BoundStatementBuilder&gt;} can be added as the <b>second</b>
  * parameter. It will be applied to the statement before execution. This allows you to customize
  * certain aspects of the request (page size, timeout, etc) at runtime.
  *

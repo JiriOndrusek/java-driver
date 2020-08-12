@@ -126,10 +126,11 @@ public class DaoIncrementMethodGenerator extends DaoMethodGenerator {
     // All entity properties are bound in the generated request: primary key columns in the WHERE
     // clause, and other columns in the SET clause.
     updateStatementBlock.addStatement(
-        "$1L.set($2L, boundStatementBuilder, $3T.$4L)",
+        "$1L.set($2L, boundStatementBuilder, isProtocolVersionV3 ? $3T.$4L : $3T.$5L)",
         helperFieldName,
         entityParameterName,
         NullSavingStrategy.class,
+        NullSavingStrategy.SET_TO_NULL,
         NullSavingStrategy.DO_NOT_SET);
 
     updateStatementBlock

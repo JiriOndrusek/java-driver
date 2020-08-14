@@ -35,10 +35,25 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  *
- * Note that when the mapper processes a Scala case class (detected by checking if the entity
- * implements {@code scala.Product}), it will automatically switch to {@code getterStyle = SHORT}
- * and {@code mutable = false}. You can override those defaults by adding an explicit annotation on
- * your case class.
+ * This annotation can be inherited from an interface or parent class.
+ *
+ * <p>When neither the entity class nor any of its parent is explicitly annotated, the mapper will
+ * assume context-dependent defaults:
+ *
+ * <ul>
+ *   <li>for a Scala case class: {@code mutable = false} and {@code getterStyle = SHORT}. The mapper
+ *       detects this case by checking if the entity implements {@code scala.Product}.
+ *   <li>for a Kotlin data class: {@code mutable = false} and {@code getterStyle = JAVABEANS}. The
+ *       mapper detects this case by checking if the entity is annotated with {@code
+ *       kotlin.Metadata}, and if it has any method named {@code component1} (both of these are
+ *       added automatically by the Kotlin compiler).
+ *   <li>any other case: {@code mutable = true} and {@code getterStyle = JAVABEANS}
+ * </ul>
+ *
+ * Not that this only applies if the annotation is completely absent. If it is present with only
+ * some of its attributes, the remaining attributes will get the default declared by the annotation,
+ * not the context-dependent default above (for example, if a Kotlin data class is annotated with
+ * {@code @PropertyStrategy(getterStyle = SHORT)}, it will be mutable).
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)

@@ -252,19 +252,29 @@ To set up your project, refer to the Kotlin website:
     }
     ```
 
-You can use Kotlin [data classes] for your entities. Just keep in mind that the mapper expects a
-no-arg constructor, which means that you must define default values; and setters, which means that
-properties must be declared with `var`, not `val`.
+You can use Kotlin [data classes] for your entities. Data classes are usually
+[immutable](../entities/#mutability), but you don't need to declare it explicitly. The mapper will
+detect that it's dealing with a data class, and assume immutability by default: 
 
 ```kotlin
 @Entity
+data class Product(@PartitionKey val id: Int?, val description: String?)
+```
+
+Data classes may also be made mutable (by declaring the components with `var` instead of `val`). If
+you choose that approach, you'll have to annotate your entities with [@PropertyStrategy], and also
+declare a default value for every component in order to generate a no-arg constructor:
+
+```kotlin
+@Entity
+@PropertyStrategy(mutable = true)
 data class Product(@PartitionKey var id: Int? = null, var description: String? = null)
 ```
 
 All of the [property annotations](../entities/#property-annotations) can be declared directly on the
-constructor properties.
+components.
 
-If you want to take advantage of [null saving strategies](../daos/null_saving/), your properties
+If you want to take advantage of [null saving strategies](../daos/null_saving/), your components
 should be nullable.
 
 The other mapper interfaces are pretty similar to the Java versions:
@@ -282,3 +292,6 @@ interface ProductDao {
 [gradle_kotlin]: https://kotlinlang.org/docs/reference/using-gradle.html
 [gradle_kapt]: https://kotlinlang.org/docs/reference/kapt.html#using-in-gradle
 [data classes]: https://kotlinlang.org/docs/reference/data-classes.html
+
+[@PropertyStrategy]: https://docs.datastax.com/en/drivers/java/4.8/com/datastax/oss/driver/api/mapper/annotations/PropertyStrategy.html
+

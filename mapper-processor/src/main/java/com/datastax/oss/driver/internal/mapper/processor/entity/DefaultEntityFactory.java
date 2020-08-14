@@ -57,6 +57,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -87,15 +88,15 @@ public class DefaultEntityFactory implements EntityFactory {
       typeHierarchy.add((TypeElement) context.getTypeUtils().asElement(type));
     }
 
-    boolean isScalaCaseClass = isScalaCaseClass(typeHierarchy);
+    Language language = Language.detect(typeHierarchy);
 
     Optional<PropertyStrategy> introspectionStrategy = getIntrospectionStrategy(typeHierarchy);
     GetterStyle getterStyle =
         introspectionStrategy
             .map(PropertyStrategy::getterStyle)
-            .orElse(isScalaCaseClass ? GetterStyle.SHORT : GetterStyle.JAVABEANS);
+            .orElse(language.defaultGetterStyle);
     boolean mutable =
-        introspectionStrategy.map(PropertyStrategy::mutable).orElse(!isScalaCaseClass);
+        introspectionStrategy.map(PropertyStrategy::mutable).orElse(language.defaultMutable);
     CqlNameGenerator cqlNameGenerator = buildCqlNameGenerator(typeHierarchy);
     Set<String> transientProperties = getTransientPropertyNames(typeHierarchy);
 
@@ -125,16 +126,18 @@ public class DefaultEntityFactory implements EntityFactory {
 
         String getMethodName = getMethod.getSimpleName().toString();
 
-        // toString(), hashCode() and a few Scala methods test as false positives with the short
-        // getter style:
+        // Skip methods that test as false positives with the short getter style: toString(),
+        // hashCode() and a few Scala or Kotlin methods.
         if (getMethodName.equals("toString")
             || getMethodName.equals("hashCode")
-            || (isScalaCaseClass
+            || (language == Language.SCALA_CASE_CLASS
                 && (getMethodName.equals("productPrefix")
                     || getMethodName.equals("productArity")
                     || getMethodName.equals("productIterator")
                     || getMethodName.equals("productElementNames")
-                    || getMethodName.startsWith("copy$default$")))) {
+                    || getMethodName.startsWith("copy$default$")))
+            || (language == Language.KOTLIN_DATA_CLASS
+                && getMethodName.matches("component[0-9]+"))) {
           continue;
         }
 
@@ -277,16 +280,6 @@ public class DefaultEntityFactory implements EntityFactory {
             mutable);
     validateConstructor(entityDefinition, processedClass);
     return entityDefinition;
-  }
-
-  private boolean isScalaCaseClass(Set<TypeElement> typeHierarchy) {
-    for (TypeElement element : typeHierarchy) {
-      Name name = element.getQualifiedName();
-      if (name != null && name.toString().equals("scala.Product")) {
-        return true;
-      }
-    }
-    return false;
   }
 
   @Nullable
@@ -684,6 +677,61 @@ public class DefaultEntityFactory implements EntityFactory {
         }
       }
       return true;
+    }
+  }
+
+  /**
+   * The source language (and construct) of an entity type. It impacts the defaults for entities
+   * that do not explicitly declare the {@link PropertyStrategy} annotation.
+   */
+  private enum Language {
+    SCALA_CASE_CLASS(false, GetterStyle.SHORT),
+    KOTLIN_DATA_CLASS(false, GetterStyle.JAVABEANS),
+    UNKNOWN(true, GetterStyle.JAVABEANS),
+    ;
+
+    final boolean defaultMutable;
+    final GetterStyle defaultGetterStyle;
+
+    Language(boolean defaultMutable, GetterStyle defaultGetterStyle) {
+      this.defaultMutable = defaultMutable;
+      this.defaultGetterStyle = defaultGetterStyle;
+    }
+
+    static Language detect(Set<TypeElement> typeHierarchy) {
+      if (typeHierarchy.stream().anyMatch(Language::isScalaProduct)) {
+        return SCALA_CASE_CLASS;
+      }
+
+      TypeElement entityClass = typeHierarchy.iterator().next();
+      // Kotlin adds `@kotlin.Metadata` on every generated class, we also check `component1` which
+      // is a generated method specific to data classes (to eliminate regular Kotlin classes).
+      if (entityClass.getAnnotationMirrors().stream().anyMatch(Language::isKotlinMetadata)
+          && entityClass.getEnclosedElements().stream()
+              .anyMatch(e -> isMethodNamed(e, "component1"))) {
+        return KOTLIN_DATA_CLASS;
+      }
+
+      return UNKNOWN;
+    }
+
+    private static boolean isScalaProduct(TypeElement type) {
+      Name name = type.getQualifiedName();
+      return name != null && name.toString().equals("scala.Product");
+    }
+
+    private static boolean isKotlinMetadata(AnnotationMirror a) {
+      DeclaredType declaredType = a.getAnnotationType();
+      if (declaredType.getKind() == TypeKind.DECLARED) {
+        TypeElement element = (TypeElement) declaredType.asElement();
+        return element.getQualifiedName().toString().equals("kotlin.Metadata");
+      }
+      return false;
+    }
+
+    private static boolean isMethodNamed(Element element, String methodName) {
+      return element.getKind() == ElementKind.METHOD
+          && element.getSimpleName().toString().equals(methodName);
     }
   }
 }

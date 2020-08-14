@@ -687,6 +687,7 @@ public class DefaultEntityFactory implements EntityFactory {
   private enum Language {
     SCALA_CASE_CLASS(false, GetterStyle.SHORT),
     KOTLIN_DATA_CLASS(false, GetterStyle.JAVABEANS),
+    JAVA14_RECORD(false, GetterStyle.SHORT),
     UNKNOWN(true, GetterStyle.JAVABEANS),
     ;
 
@@ -699,8 +700,13 @@ public class DefaultEntityFactory implements EntityFactory {
     }
 
     static Language detect(Set<TypeElement> typeHierarchy) {
-      if (typeHierarchy.stream().anyMatch(Language::isScalaProduct)) {
-        return SCALA_CASE_CLASS;
+      for (TypeElement type : typeHierarchy) {
+        if (isNamed(type, "scala.Product")) {
+          return SCALA_CASE_CLASS;
+        }
+        if (isNamed(type, "java.lang.Record")) {
+          return JAVA14_RECORD;
+        }
       }
 
       TypeElement entityClass = typeHierarchy.iterator().next();
@@ -715,9 +721,9 @@ public class DefaultEntityFactory implements EntityFactory {
       return UNKNOWN;
     }
 
-    private static boolean isScalaProduct(TypeElement type) {
+    private static boolean isNamed(TypeElement type, String expectedName) {
       Name name = type.getQualifiedName();
-      return name != null && name.toString().equals("scala.Product");
+      return name != null && name.toString().equals(expectedName);
     }
 
     private static boolean isKotlinMetadata(AnnotationMirror a) {

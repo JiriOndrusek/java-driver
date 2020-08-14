@@ -47,6 +47,8 @@ import java.lang.annotation.Target;
  *       mapper detects this case by checking if the entity is annotated with {@code
  *       kotlin.Metadata}, and if it has any method named {@code component1} (both of these are
  *       added automatically by the Kotlin compiler).
+ *   <li>Java records (JDK 14 and above): {@code mutable = false} and {@code getterStyle = SHORT}.
+ *       The mapper detects this case by checking if the entity extends {@code java.lang.Record}.
  *   <li>any other case: {@code mutable = true} and {@code getterStyle = JAVABEANS}
  * </ul>
  *

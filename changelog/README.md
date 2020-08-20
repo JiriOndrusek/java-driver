@@ -4,6 +4,7 @@
 
 ### 4.9.0 (in progress)
 
+- [improvement] JAVA-2864: Revisit mapper processor's messaging
 
 ### 4.8.0
 

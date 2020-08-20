@@ -4,6 +4,7 @@
 
 ### 4.9.0 (in progress)
 
+- [new feature] JAVA-2816: Support immutability and short getter names in the mapper
 
 ### 4.8.0
 

@@ -17,6 +17,7 @@ package com.datastax.oss.driver.internal.metrics.micrometer;
 
 import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
 import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
+import com.datastax.oss.driver.api.core.context.DriverContext;
 import com.datastax.oss.driver.api.core.metadata.Node;
 import com.datastax.oss.driver.api.core.metrics.Metrics;
 import com.datastax.oss.driver.api.core.metrics.NodeMetric;
@@ -53,8 +54,11 @@ public class MicrometerMetricsFactory implements MetricsFactory {
   private final SessionMetricUpdater sessionUpdater;
   private final Cache<Node, MicrometerNodeMetricUpdater> metricsCache;
 
-  public MicrometerMetricsFactory(
-      InternalDriverContext context, MeterRegistry registry, Ticker ticker) {
+  public MicrometerMetricsFactory(DriverContext context) {
+    this((InternalDriverContext) context, Ticker.systemTicker());
+  }
+
+  public MicrometerMetricsFactory(InternalDriverContext context, Ticker ticker) {
     this.context = context;
     String logPrefix = context.getSessionName();
     DriverExecutionProfile config = context.getConfig().getDefaultProfile();
@@ -87,9 +91,16 @@ public class MicrometerMetricsFactory implements MetricsFactory {
       this.registry = null;
       this.sessionUpdater = NoopSessionMetricUpdater.INSTANCE;
     } else {
-      this.registry = registry;
-      this.sessionUpdater =
-          new MicrometerSessionMetricUpdater(enabledSessionMetrics, this.registry, this.context);
+      // try to get the mertic registry from the context
+      Object possibleMetricRegistry = context.getMetricRegistry();
+      if (possibleMetricRegistry instanceof MeterRegistry) {
+        this.registry = (MeterRegistry) possibleMetricRegistry;
+        this.sessionUpdater =
+            new MicrometerSessionMetricUpdater(enabledSessionMetrics, this.registry, this.context);
+      } else {
+        this.registry = null;
+        this.sessionUpdater = NoopSessionMetricUpdater.INSTANCE;
+      }
     }
   }
 

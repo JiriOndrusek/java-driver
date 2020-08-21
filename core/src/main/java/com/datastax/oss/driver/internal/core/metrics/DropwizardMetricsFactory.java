@@ -18,6 +18,7 @@ package com.datastax.oss.driver.internal.core.metrics;
 import com.codahale.metrics.MetricRegistry;
 import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
 import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
+import com.datastax.oss.driver.api.core.context.DriverContext;
 import com.datastax.oss.driver.api.core.metadata.Node;
 import com.datastax.oss.driver.api.core.metrics.Metrics;
 import com.datastax.oss.driver.api.core.metrics.NodeMetric;
@@ -49,6 +50,10 @@ public class DropwizardMetricsFactory implements MetricsFactory {
   @Nullable private final Metrics metrics;
   private final SessionMetricUpdater sessionUpdater;
   private final Cache<Node, DropwizardNodeMetricUpdater> metricsCache;
+
+  public DropwizardMetricsFactory(DriverContext context) {
+    this((InternalDriverContext) context, Ticker.systemTicker());
+  }
 
   public DropwizardMetricsFactory(InternalDriverContext context, Ticker ticker) {
     this.context = context;

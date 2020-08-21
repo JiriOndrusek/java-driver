@@ -19,16 +19,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
-import com.datastax.oss.driver.api.core.context.DriverContext;
 import com.datastax.oss.driver.api.core.metrics.DefaultNodeMetric;
 import com.datastax.oss.driver.api.core.metrics.DefaultSessionMetric;
-import com.datastax.oss.driver.api.core.session.ProgrammaticArguments;
-import com.datastax.oss.driver.api.core.session.SessionBuilder;
 import com.datastax.oss.driver.categories.ParallelizableTests;
-import com.datastax.oss.driver.internal.metrics.microprofile.MicroProfileDriverContext;
+import com.datastax.oss.driver.internal.metrics.microprofile.MicroProfileMetricsFactory;
 import com.datastax.oss.driver.metrics.common.AbstractMetricsTestBase;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import io.smallrye.metrics.MetricsRegistryImpl;
 import java.util.Collection;
 import java.util.Map.Entry;
@@ -107,8 +102,13 @@ public class MicroProfileMetricsIT extends AbstractMetricsTestBase {
   }
 
   @Override
-  protected SessionBuilder<?, ?> getSessionBuilder() {
-    return new MicroProfileSessionBuilder(METRIC_REGISTRY);
+  protected Object getMetricRegistry() {
+    return METRIC_REGISTRY;
+  }
+
+  @Override
+  protected String getMetricsFactoryClass() {
+    return MicroProfileMetricsFactory.class.getName();
   }
 
   @Override
@@ -183,29 +183,5 @@ public class MicroProfileMetricsIT extends AbstractMetricsTestBase {
             && Pattern.matches(metricPattern, id.getName());
       }
     };
-  }
-
-  private static class MicroProfileSessionBuilder
-      extends SessionBuilder<MicroProfileSessionBuilder, CqlSession> {
-
-    private final MetricRegistry registry;
-
-    MicroProfileSessionBuilder(@NonNull MetricRegistry registry) {
-      this.registry = registry;
-    }
-
-    @NonNull
-    @Override
-    protected CqlSession wrap(@NonNull CqlSession defaultSession) {
-      return defaultSession;
-    }
-
-    @NonNull
-    @Override
-    protected DriverContext buildContext(
-        @NonNull DriverConfigLoader configLoader,
-        @NonNull ProgrammaticArguments programmaticArguments) {
-      return new MicroProfileDriverContext(configLoader, programmaticArguments, registry);
-    }
   }
 }

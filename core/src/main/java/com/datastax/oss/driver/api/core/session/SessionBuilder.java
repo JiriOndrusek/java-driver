@@ -650,6 +650,12 @@ public abstract class SessionBuilder<SelfT extends SessionBuilder, SessionT> {
     return self;
   }
 
+  @NonNull
+  public SelfT withMetricRegistry(@Nullable Object metricRegistry) {
+    this.programmaticArgumentsBuilder.withMetricRegistry(metricRegistry);
+    return self;
+  }
+
   /**
    * Creates the session with the options set by this builder.
    *

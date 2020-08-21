@@ -180,4 +180,7 @@ public interface InternalDriverContext extends DriverContext {
    */
   @NonNull
   RequestLogFormatter getRequestLogFormatter();
+
+  @Nullable
+  Object getMetricRegistry();
 }

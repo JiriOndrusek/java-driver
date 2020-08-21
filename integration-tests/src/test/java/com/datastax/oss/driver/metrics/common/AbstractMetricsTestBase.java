@@ -47,7 +47,7 @@ public abstract class AbstractMetricsTestBase {
           .map(DefaultNodeMetric::getPath)
           .collect(Collectors.toList());
 
-  protected Object getMetricRegistry() {
+  protected Object getMetricsRegistry() {
     return null;
   }
 
@@ -69,7 +69,7 @@ public abstract class AbstractMetricsTestBase {
         CqlSession.builder().addContactEndPoints(CCM_RULE.getContactPoints());
     try (CqlSession session =
         (CqlSession)
-            builder.withConfigLoader(loader).withMetricRegistry(getMetricRegistry()).build()) {
+            builder.withConfigLoader(loader).withMetricsRegistry(getMetricsRegistry()).build()) {
       for (int i = 0; i < 10; i++) {
         session.execute("SELECT release_version FROM system.local");
       }

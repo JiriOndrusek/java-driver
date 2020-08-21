@@ -241,7 +241,7 @@ public class DefaultDriverContext implements InternalDriverContext {
   private final UUID startupClientId;
   private final String startupApplicationName;
   private final String startupApplicationVersion;
-  private final Object metricRegistry;
+  private final Object metricsRegistry;
   // A stack trace captured in the constructor. Used to extract information about the client
   // application.
   private final StackTraceElement[] initStackTrace;
@@ -299,7 +299,7 @@ public class DefaultDriverContext implements InternalDriverContext {
       stackTrace = new StackTraceElement[] {};
     }
     this.initStackTrace = stackTrace;
-    this.metricRegistry = programmaticArguments.getMetricRegistry();
+    this.metricsRegistry = programmaticArguments.getMetricRegistry();
   }
 
   /**
@@ -1017,6 +1017,6 @@ public class DefaultDriverContext implements InternalDriverContext {
   @Nullable
   @Override
   public Object getMetricsRegistry() {
-    return metricRegistry;
+    return metricsRegistry;
   }
 }

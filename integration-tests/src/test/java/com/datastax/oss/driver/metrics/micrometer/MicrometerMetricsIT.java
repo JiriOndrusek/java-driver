@@ -108,7 +108,7 @@ public class MicrometerMetricsIT extends AbstractMetricsTestBase {
   }
 
   @Override
-  protected Object getMetricRegistry() {
+  protected Object getMetricsRegistry() {
     return METER_REGISTRY;
   }
 

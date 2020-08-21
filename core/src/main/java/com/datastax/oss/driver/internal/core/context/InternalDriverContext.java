@@ -185,7 +185,7 @@ public interface InternalDriverContext extends DriverContext {
    * A metrics registry for storing metrics.
    *
    * <p>This will return the object from {@link
-   * SessionBuilder#withMetricRegistry(java.lang.Object)}. Access to this registry object is only
+   * SessionBuilder#withMetricsRegistry(java.lang.Object)}. Access to this registry object is only
    * intended for {@link MetricsFactory} implementations that need to expose a way to specify the
    * registry external to the Factory implementation itself.
    *

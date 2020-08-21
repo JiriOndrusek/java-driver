@@ -188,7 +188,7 @@ public class ProgrammaticArguments {
     private String startupApplicationName;
     private String startupApplicationVersion;
     private MutableCodecRegistry codecRegistry;
-    private Object metricRegistry;
+    private Object metricsRegistry;
 
     @NonNull
     public Builder addTypeCodecs(@NonNull TypeCodec<?>... typeCodecs) {
@@ -299,8 +299,8 @@ public class ProgrammaticArguments {
     }
 
     @NonNull
-    public Builder withMetricRegistry(@Nullable Object metricRegistry) {
-      this.metricRegistry = metricRegistry;
+    public Builder withMetricsRegistry(@Nullable Object metricsRegistry) {
+      this.metricsRegistry = metricsRegistry;
       return this;
     }
 
@@ -321,7 +321,7 @@ public class ProgrammaticArguments {
           startupApplicationName,
           startupApplicationVersion,
           codecRegistry,
-          metricRegistry);
+          metricsRegistry);
     }
   }
 }

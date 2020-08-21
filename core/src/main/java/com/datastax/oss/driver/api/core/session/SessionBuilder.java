@@ -665,8 +665,8 @@ public abstract class SessionBuilder<SelfT extends SessionBuilder, SessionT> {
    * expected to be set with this method.
    */
   @NonNull
-  public SelfT withMetricRegistry(@Nullable Object metricRegistry) {
-    this.programmaticArgumentsBuilder.withMetricRegistry(metricRegistry);
+  public SelfT withMetricsRegistry(@Nullable Object metricRegistry) {
+    this.programmaticArgumentsBuilder.withMetricsRegistry(metricRegistry);
     return self;
   }
 

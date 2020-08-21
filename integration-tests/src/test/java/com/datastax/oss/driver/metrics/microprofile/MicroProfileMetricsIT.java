@@ -102,7 +102,7 @@ public class MicroProfileMetricsIT extends AbstractMetricsTestBase {
   }
 
   @Override
-  protected Object getMetricRegistry() {
+  protected Object getMetricsRegistry() {
     return METRIC_REGISTRY;
   }
 

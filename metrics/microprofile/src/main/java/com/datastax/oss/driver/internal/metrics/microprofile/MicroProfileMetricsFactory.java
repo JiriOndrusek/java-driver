@@ -90,15 +90,27 @@ public class MicroProfileMetricsFactory implements MetricsFactory {
       this.registry = null;
       this.sessionUpdater = NoopSessionMetricUpdater.INSTANCE;
     } else {
-      Object possibleMetricRegistry = context.getMetricRegistry();
+      Object possibleMetricRegistry = context.getMetricsRegistry();
+      if (possibleMetricRegistry == null) {
+        // metrics are enabled, but a metrics registry was not supplied to the context
+        throw new IllegalArgumentException(
+            "Metrics registry object is NULL. Expected registry object to be of type '"
+                + MetricRegistry.class.getCanonicalName()
+                + "'");
+      }
       if (possibleMetricRegistry instanceof MetricRegistry) {
         this.registry = (MetricRegistry) possibleMetricRegistry;
         this.sessionUpdater =
             new MicroProfileSessionMetricUpdater(
                 enabledSessionMetrics, this.registry, this.context);
       } else {
-        this.registry = null;
-        this.sessionUpdater = NoopSessionMetricUpdater.INSTANCE;
+        // Metrics are enabled, but the registry object is not an expected type
+        throw new IllegalArgumentException(
+            "Unexpected Metrics registry object. Expected registry object to be of type '"
+                + MetricRegistry.class.getCanonicalName()
+                + "', but was '"
+                + possibleMetricRegistry.getClass().getCanonicalName()
+                + "'");
       }
     }
   }

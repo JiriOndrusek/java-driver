@@ -193,7 +193,7 @@ public interface InternalDriverContext extends DriverContext {
    * metrics registry object.
    */
   @Nullable
-  default Object getMetricRegistry() {
+  default Object getMetricsRegistry() {
     return null;
   }
 }

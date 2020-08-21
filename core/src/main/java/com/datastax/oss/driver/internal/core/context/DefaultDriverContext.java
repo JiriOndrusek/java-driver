@@ -1016,7 +1016,7 @@ public class DefaultDriverContext implements InternalDriverContext {
 
   @Nullable
   @Override
-  public Object getMetricRegistry() {
+  public Object getMetricsRegistry() {
     return metricRegistry;
   }
 }

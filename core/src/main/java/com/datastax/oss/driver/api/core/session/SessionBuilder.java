@@ -43,6 +43,7 @@ import com.datastax.oss.driver.internal.core.config.typesafe.DefaultDriverConfig
 import com.datastax.oss.driver.internal.core.context.DefaultDriverContext;
 import com.datastax.oss.driver.internal.core.context.InternalDriverContext;
 import com.datastax.oss.driver.internal.core.metadata.DefaultEndPoint;
+import com.datastax.oss.driver.internal.core.metrics.MetricsFactory;
 import com.datastax.oss.driver.internal.core.session.DefaultSession;
 import com.datastax.oss.driver.internal.core.util.concurrent.BlockingOperation;
 import com.datastax.oss.driver.internal.core.util.concurrent.CompletableFutures;
@@ -650,6 +651,19 @@ public abstract class SessionBuilder<SelfT extends SessionBuilder, SessionT> {
     return self;
   }
 
+  /**
+   * The metrics registry object for storing driver metrics.
+   *
+   * <p>The default driver metrics framework is DropWizard and does not need an external metrics
+   * registry object to be provided.
+   *
+   * <p>If using a non-default metrics framework, it is necessary to call this method <b>only if</b>
+   * the {@link MetricsFactory} implementation does not provide its own registry for metrics
+   * storage.
+   *
+   * <p>If using Micrometer or MicroProfile driver implementations, an acceptable registry object is
+   * expected to be set with this method.
+   */
   @NonNull
   public SelfT withMetricRegistry(@Nullable Object metricRegistry) {
     this.programmaticArgumentsBuilder.withMetricRegistry(metricRegistry);

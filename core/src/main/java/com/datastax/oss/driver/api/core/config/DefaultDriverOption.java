@@ -818,7 +818,7 @@ public enum DefaultDriverOption implements DriverOption {
   METRICS_NODE_EXPIRE_AFTER("advanced.metrics.node.expire-after"),
 
   /**
-   * The fully-qualified classname of the desired MetricsFactory implementation.
+   * The classname of the desired MetricsFactory implementation.
    *
    * <p>Value-type: {@link String}
    */

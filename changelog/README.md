@@ -4,6 +4,7 @@
 
 ### 4.9.0 (in progress)
 
+- [improvement] JAVA-2855: Provide user-friendly way of selecting metrics framework
 
 ### 4.8.0
 

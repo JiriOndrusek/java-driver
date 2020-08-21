@@ -705,7 +705,7 @@ public class TypedDriverOption<ValueT> {
   public static final TypedDriverOption<Duration> METRICS_NODE_EXPIRE_AFTER =
       new TypedDriverOption<>(DefaultDriverOption.METRICS_NODE_EXPIRE_AFTER, GenericType.DURATION);
 
-  /** The fully-qualified classname of the desired MetricsFactory implementation. */
+  /** The classname of the desired MetricsFactory implementation. */
   public static final TypedDriverOption<String> METRICS_FACTORY_CLASS =
       new TypedDriverOption<>(DefaultDriverOption.METRICS_FACTORY_CLASS, GenericType.STRING);
 

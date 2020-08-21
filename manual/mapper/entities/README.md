@@ -104,7 +104,8 @@ the error message describes the expected signature.
 
 #### Getter style
 
-By default, the mapper looks for JavaBeans-style getters prefixed with "get":
+By default, the mapper looks for JavaBeans-style getters prefixed with "get", or "is" for boolean
+properties:
 
 ```java
 @Entity

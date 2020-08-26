@@ -60,7 +60,7 @@ public class Lz4Compressor extends ByteBufCompressor {
   }
 
   @Override
-  protected ByteBuf compressDirect(ByteBuf input, boolean prependWithUncompressedLength) {
+  public ByteBuf compressDirect(ByteBuf input, boolean prependWithUncompressedLength) {
     int maxCompressedLength = compressor.maxCompressedLength(input.readableBytes());
     // If the input is direct we will allocate a direct output buffer as well as this will allow us
     // to use LZ4Compressor.compress and so eliminate memory copies.
@@ -90,7 +90,7 @@ public class Lz4Compressor extends ByteBufCompressor {
   }
 
   @Override
-  protected ByteBuf compressHeap(ByteBuf input, boolean prependWithUncompressedLength) {
+  public ByteBuf compressHeap(ByteBuf input, boolean prependWithUncompressedLength) {
     int maxCompressedLength = compressor.maxCompressedLength(input.readableBytes());
 
     // Not a direct buffer so use byte arrays...
@@ -129,7 +129,7 @@ public class Lz4Compressor extends ByteBufCompressor {
   }
 
   @Override
-  protected ByteBuf decompressDirect(ByteBuf input, int uncompressedLength) {
+  public ByteBuf decompressDirect(ByteBuf input, int uncompressedLength) {
     // If the input is direct we will allocate a direct output buffer as well as this will allow us
     // to use LZ4Compressor.decompress and so eliminate memory copies.
     int readable = input.readableBytes();
@@ -155,7 +155,7 @@ public class Lz4Compressor extends ByteBufCompressor {
   }
 
   @Override
-  protected ByteBuf decompressHeap(ByteBuf input, int uncompressedLength) {
+  public ByteBuf decompressHeap(ByteBuf input, int uncompressedLength) {
     // Not a direct buffer so use byte arrays...
     byte[] in = input.array();
     int len = input.readableBytes();

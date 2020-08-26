@@ -25,28 +25,32 @@ import io.netty.buffer.ByteBuf;
  * images
  */
 @TargetClass(className = "com.datastax.oss.driver.internal.core.protocol.SnappyCompressor")
-final class SnappySubstitution {
+final class SnappySubstitution implements ByteBufCompressOps {
 
   @Inject
   private final String EXCEPTION_MSG = "Snappy compression is not supported for native images";
 
   @Substitute
-  protected ByteBuf compressHeap(ByteBuf input, boolean prependWithUncompressedLength) {
+  @Override
+  public ByteBuf compressHeap(ByteBuf input, boolean prependWithUncompressedLength) {
     throw new UnsupportedOperationException(EXCEPTION_MSG);
   }
 
   @Substitute
-  protected ByteBuf decompressDirect(ByteBuf input, int uncompressedLength) {
+  @Override
+  public ByteBuf decompressDirect(ByteBuf input, int uncompressedLength) {
     throw new UnsupportedOperationException(EXCEPTION_MSG);
   }
 
   @Substitute
-  protected ByteBuf decompressHeap(ByteBuf input, int uncompressedLength) {
+  @Override
+  public ByteBuf decompressHeap(ByteBuf input, int uncompressedLength) {
     throw new UnsupportedOperationException(EXCEPTION_MSG);
   }
 
   @Substitute
-  protected ByteBuf compressDirect(ByteBuf input, boolean prependWithUncompressedLength) {
+  @Override
+  public ByteBuf compressDirect(ByteBuf input, boolean prependWithUncompressedLength) {
     throw new UnsupportedOperationException(EXCEPTION_MSG);
   }
 }

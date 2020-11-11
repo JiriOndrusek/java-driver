@@ -24,7 +24,7 @@ import io.netty.buffer.ByteBuf;
 @TargetClass(
     className = "com.datastax.oss.driver.internal.core.protocol.Lz4Compressor",
     onlyWith = Lz4Missing.class)
-final class Lz4Substitution {
+final class Lz4Substitution implements ByteBufCompressOps {
 
   @Inject
   private final String EXCEPTION_MSG =
@@ -34,22 +34,26 @@ final class Lz4Substitution {
   public Lz4Substitution(DriverContext context) {}
 
   @Substitute
-  protected ByteBuf compressHeap(ByteBuf input, boolean prependWithUncompressedLength) {
+  @Override
+  public ByteBuf compressHeap(ByteBuf input, boolean prependWithUncompressedLength) {
     throw new UnsupportedOperationException(EXCEPTION_MSG);
   }
 
   @Substitute
-  protected ByteBuf decompressDirect(ByteBuf input, int uncompressedLength) {
+  @Override
+  public ByteBuf decompressDirect(ByteBuf input, int uncompressedLength) {
     throw new UnsupportedOperationException(EXCEPTION_MSG);
   }
 
   @Substitute
-  protected ByteBuf decompressHeap(ByteBuf input, int uncompressedLength) {
+  @Override
+  public ByteBuf decompressHeap(ByteBuf input, int uncompressedLength) {
     throw new UnsupportedOperationException(EXCEPTION_MSG);
   }
 
   @Substitute
-  protected ByteBuf compressDirect(ByteBuf input, boolean prependWithUncompressedLength) {
+  @Override
+  public ByteBuf compressDirect(ByteBuf input, boolean prependWithUncompressedLength) {
     throw new UnsupportedOperationException(EXCEPTION_MSG);
   }
 }

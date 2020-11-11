@@ -48,8 +48,7 @@ public class SnappyCompressor extends ByteBufCompressor {
   }
 
   @Override
-  protected ByteBuf compressDirect(
-      ByteBuf input, /*ignored*/ boolean prependWithUncompressedLength) {
+  public ByteBuf compressDirect(ByteBuf input, /*ignored*/ boolean prependWithUncompressedLength) {
     int maxCompressedLength = Snappy.maxCompressedLength(input.readableBytes());
     // If the input is direct we will allocate a direct output buffer as well as this will allow us
     // to use Snappy.compress(ByteBuffer, ByteBuffer) and so eliminate memory copies.
@@ -72,7 +71,7 @@ public class SnappyCompressor extends ByteBufCompressor {
   }
 
   @Override
-  protected ByteBuf compressHeap(ByteBuf input, /*ignored*/ boolean prependWithUncompressedLength) {
+  public ByteBuf compressHeap(ByteBuf input, /*ignored*/ boolean prependWithUncompressedLength) {
     int maxCompressedLength = Snappy.maxCompressedLength(input.readableBytes());
     int inOffset = input.arrayOffset() + input.readerIndex();
     byte[] in = input.array();
@@ -108,7 +107,7 @@ public class SnappyCompressor extends ByteBufCompressor {
   }
 
   @Override
-  protected ByteBuf decompressDirect(ByteBuf input, /*ignored*/ int uncompressedLength) {
+  public ByteBuf decompressDirect(ByteBuf input, /*ignored*/ int uncompressedLength) {
     ByteBuffer in = inputNioBuffer(input);
     // Increase reader index.
     input.readerIndex(input.writerIndex());
@@ -138,7 +137,7 @@ public class SnappyCompressor extends ByteBufCompressor {
   }
 
   @Override
-  protected ByteBuf decompressHeap(ByteBuf input, /*ignored*/ int uncompressedLength) {
+  public ByteBuf decompressHeap(ByteBuf input, /*ignored*/ int uncompressedLength) {
     // Not a direct buffer so use byte arrays...
     int inOffset = input.arrayOffset() + input.readerIndex();
     byte[] in = input.array();

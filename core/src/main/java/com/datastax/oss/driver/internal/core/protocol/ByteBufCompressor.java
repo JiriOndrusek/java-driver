@@ -21,7 +21,7 @@ import java.nio.ByteBuffer;
 import net.jcip.annotations.ThreadSafe;
 
 @ThreadSafe
-public abstract class ByteBufCompressor implements Compressor<ByteBuf> {
+public abstract class ByteBufCompressor implements Compressor<ByteBuf>, ByteBufCompressOps {
 
   @Override
   public ByteBuf compress(ByteBuf uncompressed) {
@@ -37,10 +37,6 @@ public abstract class ByteBufCompressor implements Compressor<ByteBuf> {
         : compressHeap(uncompressed, false);
   }
 
-  protected abstract ByteBuf compressDirect(ByteBuf input, boolean prependWithUncompressedLength);
-
-  protected abstract ByteBuf compressHeap(ByteBuf input, boolean prependWithUncompressedLength);
-
   @Override
   public ByteBuf decompress(ByteBuf compressed) {
     return decompressWithoutLength(compressed, readUncompressedLength(compressed));
@@ -54,10 +50,6 @@ public abstract class ByteBufCompressor implements Compressor<ByteBuf> {
         ? decompressDirect(compressed, uncompressedLength)
         : decompressHeap(compressed, uncompressedLength);
   }
-
-  protected abstract ByteBuf decompressDirect(ByteBuf input, int uncompressedLength);
-
-  protected abstract ByteBuf decompressHeap(ByteBuf input, int uncompressedLength);
 
   protected static ByteBuffer inputNioBuffer(ByteBuf buf) {
     // Using internalNioBuffer(...) as we only hold the reference in this method and so can
